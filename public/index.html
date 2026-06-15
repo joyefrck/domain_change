@@ -1,0 +1,55 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>路线检测</title>
+    <link rel="stylesheet" href="/assets/styles.css">
+  </head>
+  <body>
+    <header class="shell topbar">
+      <div class="brand">
+        <div class="brand-mark">D</div>
+        <span data-site-name>Domain Entry</span>
+      </div>
+    </header>
+
+    <main class="shell">
+      <section class="hero">
+        <div class="hero-copy">
+          <h1>路线检测</h1>
+          <p>页面会从你的浏览器直接检测候选域名的健康端点，按可达性、延迟、服务端健康状态和权重推荐最适合进入的登录地址。</p>
+          <div class="status-line">
+            <span class="metric" id="summaryTotal">候选域名 0</span>
+            <span class="metric" id="summaryChecked">已检测 0</span>
+            <span class="metric" id="summaryAvailable">可用 0</span>
+          </div>
+        </div>
+
+        <section class="recommend-panel">
+          <div class="panel-header">
+            <div>
+              <h2 class="panel-title">推荐入口</h2>
+              <p class="panel-subtitle" id="checkingStatus">正在加载域名清单</p>
+            </div>
+            <button class="button small" id="refreshButton" type="button">重新检测</button>
+          </div>
+          <div id="recommendation" class="empty">还没有可用结果。</div>
+        </section>
+      </section>
+
+      <section>
+        <div class="panel-header">
+          <div>
+            <h2 class="panel-title">全部入口</h2>
+            <p class="panel-subtitle">如果推荐入口无法打开，可以手动尝试其他地址。</p>
+          </div>
+        </div>
+        <div class="domain-list" id="domainList"></div>
+      </section>
+    </main>
+
+    <div class="toast hidden" id="toast"></div>
+    <script type="module" src="/assets/main.js"></script>
+  </body>
+</html>

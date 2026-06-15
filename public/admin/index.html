@@ -1,0 +1,145 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>域名入口管理后台</title>
+    <link rel="stylesheet" href="/assets/styles.css">
+  </head>
+  <body>
+    <header class="shell topbar">
+      <div class="brand">
+        <div class="brand-mark">A</div>
+        <span>入口管理后台</span>
+      </div>
+      <div class="topbar-actions">
+        <a class="nav-link" href="/">返回入口页</a>
+        <button class="button small hidden" id="logoutButton" type="button">退出登录</button>
+      </div>
+    </header>
+
+    <main class="shell">
+      <section class="hero">
+        <div class="hero-copy">
+          <h1>维护登录域名池</h1>
+          <p>管理候选登录地址、权重、标签和健康端点。这里不接入主站账号，只控制入口站自己的域名清单。</p>
+        </div>
+        <section class="panel" id="loginPanel">
+          <h2 class="panel-title">管理员登录</h2>
+          <form class="form-grid" id="loginForm">
+            <label>
+              管理密码
+              <span class="password-field">
+                <input name="password" type="password" autocomplete="current-password" required>
+                <button class="icon-button" type="button" data-password-toggle aria-label="显示密码" title="显示密码">
+                  <svg viewBox="0 0 24 24" aria-hidden="true">
+                    <path d="M2.5 12s3.5-6 9.5-6 9.5 6 9.5 6-3.5 6-9.5 6-9.5-6-9.5-6Z"></path>
+                    <circle cx="12" cy="12" r="3"></circle>
+                  </svg>
+                </button>
+              </span>
+            </label>
+            <button class="button primary" type="submit">登录</button>
+          </form>
+        </section>
+      </section>
+
+      <section class="admin-layout hidden" id="adminApp">
+        <aside class="panel">
+          <h2 class="panel-title">站点设置</h2>
+          <form class="form-grid" id="settingsForm">
+            <label>
+              网站名字
+              <input name="siteName" maxlength="60" required>
+            </label>
+            <button class="button primary" type="submit">保存站点设置</button>
+          </form>
+
+          <hr class="divider">
+
+          <h2 class="panel-title">修改登录密码</h2>
+          <form class="form-grid" id="passwordForm">
+            <label>
+              当前密码
+              <span class="password-field">
+                <input name="currentPassword" type="password" autocomplete="current-password" required>
+                <button class="icon-button" type="button" data-password-toggle aria-label="显示密码" title="显示密码">
+                  <svg viewBox="0 0 24 24" aria-hidden="true">
+                    <path d="M2.5 12s3.5-6 9.5-6 9.5 6 9.5 6-3.5 6-9.5 6-9.5-6-9.5-6Z"></path>
+                    <circle cx="12" cy="12" r="3"></circle>
+                  </svg>
+                </button>
+              </span>
+            </label>
+            <label>
+              新密码
+              <span class="password-field">
+                <input name="newPassword" type="password" autocomplete="new-password" minlength="8" maxlength="128" required>
+                <button class="icon-button" type="button" data-password-toggle aria-label="显示密码" title="显示密码">
+                  <svg viewBox="0 0 24 24" aria-hidden="true">
+                    <path d="M2.5 12s3.5-6 9.5-6 9.5 6 9.5 6-3.5 6-9.5 6-9.5-6-9.5-6Z"></path>
+                    <circle cx="12" cy="12" r="3"></circle>
+                  </svg>
+                </button>
+              </span>
+            </label>
+            <button class="button primary" type="submit">保存新密码</button>
+          </form>
+
+          <hr class="divider">
+
+          <h2 class="panel-title" id="formTitle">新增域名</h2>
+          <form class="form-grid" id="domainForm">
+            <input type="hidden" name="id">
+            <label>
+              登录域名
+              <input name="url" placeholder="https://login.example.com" required>
+            </label>
+            <label>
+              显示名称
+              <input name="name" placeholder="主入口">
+            </label>
+            <label>
+              标签
+              <input name="tags" placeholder="国内,主入口">
+            </label>
+            <label>
+              权重
+              <input name="weight" type="number" min="0" max="1000" value="50">
+            </label>
+            <label>
+              健康端点
+              <input name="healthPath" value="/healthz">
+            </label>
+            <label>
+              备注
+              <textarea name="notes"></textarea>
+            </label>
+            <label class="checkbox-row">
+              <input name="enabled" type="checkbox" checked>
+              启用
+            </label>
+            <div class="actions">
+              <button class="button primary" type="submit">保存</button>
+              <button class="button" type="button" id="resetFormButton">清空</button>
+            </div>
+          </form>
+        </aside>
+
+        <section class="panel">
+          <div class="panel-header">
+            <div>
+              <h2 class="panel-title">域名列表</h2>
+              <p class="panel-subtitle">可手动触发单域名探测或全量探测。</p>
+            </div>
+            <button class="button small" id="probeAllButton" type="button">全量探测</button>
+          </div>
+          <div class="admin-table" id="domainTable"></div>
+        </section>
+      </section>
+    </main>
+
+    <div class="toast hidden" id="toast"></div>
+    <script type="module" src="/admin/admin.js"></script>
+  </body>
+</html>
