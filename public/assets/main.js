@@ -1,6 +1,8 @@
 import { rankDomains } from './domainSelection.js';
 import { probeStatus, probeUrl } from './probe.js';
 
+const HERO_TITLE = '网站可用性检测';
+
 const state = {
   domains: [],
   settings: { siteName: 'Domain Entry' },
@@ -100,7 +102,7 @@ function render() {
 
   document.title = `路线检测 - ${state.settings.siteName}`;
   nodes.siteName.textContent = state.settings.siteName;
-  nodes.siteTitle.textContent = state.settings.siteName;
+  nodes.siteTitle.textContent = HERO_TITLE;
   nodes.brandMark.textContent = state.settings.siteName.trim().charAt(0).toUpperCase() || 'D';
   nodes.summaryTotal.textContent = `候选域名 ${state.domains.length}`;
   nodes.summaryChecked.textContent = `已检测 ${checkedCount}`;

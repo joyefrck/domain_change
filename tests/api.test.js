@@ -42,7 +42,8 @@ describe('Fastify API', () => {
     const admin = await app.inject({ method: 'GET', url: '/admin/' });
 
     expect(entry.statusCode).toBe(200);
-    expect(entry.body).toContain('<h1 data-site-title>Domain Entry</h1>');
+    expect(entry.body).toContain('<span data-site-name>Domain Entry</span>');
+    expect(entry.body).toContain('<h1 data-site-title>网站可用性检测</h1>');
     expect(admin.statusCode).toBe(200);
     expect(admin.body).toContain('维护登录域名池');
   });
