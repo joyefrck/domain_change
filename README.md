@@ -51,3 +51,62 @@ Content-Type: application/json
 ```bash
 npm test
 ```
+
+## 生产部署
+
+当前生产服务器：
+
+- 主机：`47.242.108.41`
+- 应用目录：`/opt/domain-entry`
+- systemd 服务：`domain-entry.service`
+- Nginx 反代：`https://elephant-ipcheck.com` -> `http://127.0.0.1:3000`
+- 线上运行配置：`/opt/domain-entry/.env`
+- 线上 SQLite 数据：`/opt/domain-entry/data/`
+
+注意：当前 `/opt/domain-entry` 不是 Git 仓库，不能直接在该目录执行 `git pull`。以后可以直接从 GitHub 拉取代码，但建议使用 release 目录部署：从 GitHub clone 新版本，安装依赖，通过健康检查后再切换目录。这样不会覆盖线上 `.env` 和 SQLite 数据，也保留旧版本目录用于回滚。
+
+部署前先在本地确认并推送最新代码：
+
+```bash
+npm test
+git status --short
+git push origin main
+```
+
+在服务器上部署：
+
+```bash
+APP=/opt/domain-entry
+REPO=https://github.com/joyefrck/domain_change.git
+BRANCH=main
+TS=$(date +%Y%m%d%H%M%S)
+RELEASE=/opt/domain-entry.release-$TS
+BACKUP=/opt/domain-entry.backup-$TS
+
+git clone --depth 1 --branch "$BRANCH" "$REPO" "$RELEASE"
+cp -a "$APP/.env" "$RELEASE/.env"
+chmod 600 "$RELEASE/.env"
+
+cd "$RELEASE"
+npm ci --omit=dev
+
+systemctl stop domain-entry.service
+mv "$APP" "$BACKUP"
+mv "$RELEASE" "$APP"
+mv "$BACKUP/data" "$APP/data"
+systemctl start domain-entry.service
+
+systemctl is-active domain-entry.service
+curl -fsS http://127.0.0.1:3000/healthz
+curl -fsS https://elephant-ipcheck.com/healthz
+```
+
+如果启动或健康检查失败，可以回滚到上一个备份目录：
+
+```bash
+systemctl stop domain-entry.service
+mv /opt/domain-entry /opt/domain-entry.failed-$(date +%Y%m%d%H%M%S)
+mv /opt/domain-entry.backup-YYYYMMDDHHMMSS /opt/domain-entry
+systemctl start domain-entry.service
+curl -fsS http://127.0.0.1:3000/healthz
+```
