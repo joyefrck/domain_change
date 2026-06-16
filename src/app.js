@@ -5,7 +5,6 @@ import cookie from '@fastify/cookie';
 import formBody from '@fastify/formbody';
 import fastifyStatic from '@fastify/static';
 import { createSessionCookie, hashPassword, verifyPassword, verifyPasswordHash, verifySessionCookie } from './auth.js';
-import { probeAllDomains, probeDomain } from './health.js';
 
 function hashIp(ip, secret) {
   return crypto.createHmac('sha256', secret).update(ip || '').digest('hex').slice(0, 24);
@@ -51,8 +50,7 @@ export async function buildApp({
   db,
   adminPassword,
   sessionSecret,
-  publicDir = path.join(process.cwd(), 'public'),
-  healthProbeOptions = {}
+  publicDir = path.join(process.cwd(), 'public')
 }) {
   const app = Fastify({ logger: false });
   const cookieName = 'admin_session';
@@ -197,24 +195,6 @@ export async function buildApp({
     }
     return { ok: true };
   });
-
-  app.post('/admin/api/domains/:id/probe', {
-    preHandler: app.requireAdmin
-  }, async (request, reply) => {
-    const domain = db.getDomain(Number(request.params.id));
-    if (!domain) {
-      return reply.code(404).send({ error: 'Domain not found' });
-    }
-    const result = await probeDomain(domain, healthProbeOptions);
-    db.recordHealthCheck(domain.id, result);
-    return { result };
-  });
-
-  app.post('/admin/api/probe-all', {
-    preHandler: app.requireAdmin
-  }, async () => ({
-    results: await probeAllDomains(db, healthProbeOptions)
-  }));
 
   app.get('/admin/api/audit-logs', {
     preHandler: app.requireAdmin

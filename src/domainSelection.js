@@ -12,34 +12,17 @@ function normalizeBrowserResult(result) {
   };
 }
 
-function normalizeHealth(health) {
-  if (!health) {
-    return { ok: null, latencyMs: null, statusCode: null, error: '' };
-  }
-
-  return {
-    ok: typeof health.ok === 'boolean' ? health.ok : null,
-    latencyMs: Number.isFinite(health.latencyMs) ? health.latencyMs : null,
-    statusCode: Number.isFinite(health.statusCode) ? health.statusCode : null,
-    error: health.error || ''
-  };
-}
-
 function scoreDomain(domain, browser) {
-  const serverHealth = normalizeHealth(domain.serverHealth);
   const browserReachable = browser.ok === true;
-  const serverHealthy = serverHealth.ok !== false;
-  const available = browserReachable && serverHealthy && domain.enabled !== false;
+  const available = browserReachable && domain.enabled !== false;
   const browserLatency = Number.isFinite(browser.latencyMs) ? browser.latencyMs : 999_999;
-  const serverPenalty = serverHealth.ok === false ? 100_000 : 0;
   const browserPenalty = browserReachable ? 0 : 200_000;
 
   return {
     available,
     browserReachable,
-    serverHealth,
     browserLatency,
-    score: browserPenalty + serverPenalty + browserLatency
+    score: browserPenalty + browserLatency
   };
 }
 
@@ -54,7 +37,6 @@ export function rankDomains(domains, browserResults = new Map()) {
         browserLatencyMs: browser.latencyMs,
         browserError: browser.error,
         browserReachable: computed.browserReachable,
-        serverHealth: computed.serverHealth,
         available: computed.available,
         recommended: false,
         _rankIndex: index,

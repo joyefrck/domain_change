@@ -8,7 +8,6 @@ const nodes = {
   domainTable: document.querySelector('#domainTable'),
   formTitle: document.querySelector('#formTitle'),
   resetFormButton: document.querySelector('#resetFormButton'),
-  probeAllButton: document.querySelector('#probeAllButton'),
   logoutButton: document.querySelector('#logoutButton'),
   toast: document.querySelector('#toast')
 };
@@ -86,10 +85,6 @@ function editDomain(domain) {
 
 function renderDomains() {
   nodes.domainTable.innerHTML = domains.length ? domains.map((domain) => {
-    const health = domain.serverHealth || {};
-    const healthLabel = health.checkedAt
-      ? `${health.ok ? '正常' : '异常'}${health.latencyMs ? ` ${health.latencyMs}ms` : ''}`
-      : '未检测';
     return `
       <article class="admin-row">
         <div>
@@ -97,14 +92,12 @@ function renderDomains() {
           <div class="domain-meta">
             <span class="chip ${domain.enabled ? 'ok' : 'bad'}">${domain.enabled ? '启用' : '停用'}</span>
             <span class="chip">权重 ${domain.weight}</span>
-            <span class="chip ${health.ok === false ? 'bad' : ''}">服务端 ${escapeHtml(healthLabel)}</span>
             ${(domain.tags || []).map((tag) => `<span class="chip">${escapeHtml(tag)}</span>`).join('')}
           </div>
           ${domain.notes ? `<p class="panel-subtitle">${escapeHtml(domain.notes)}</p>` : ''}
         </div>
         <div class="admin-actions">
           <button class="button small" type="button" data-action="edit" data-id="${domain.id}">编辑</button>
-          <button class="button small" type="button" data-action="probe" data-id="${domain.id}">探测</button>
           <button class="button small danger" type="button" data-action="delete" data-id="${domain.id}">删除</button>
         </div>
       </article>
@@ -243,11 +236,6 @@ nodes.domainTable.addEventListener('click', async (event) => {
     if (button.dataset.action === 'edit') {
       editDomain(domain);
     }
-    if (button.dataset.action === 'probe') {
-      await api(`/admin/api/domains/${id}/probe`, { method: 'POST', body: '{}' });
-      await loadDomains();
-      showToast('探测完成');
-    }
     if (button.dataset.action === 'delete') {
       if (!confirm(`删除 ${domain.url}？`)) {
         return;
@@ -262,14 +250,5 @@ nodes.domainTable.addEventListener('click', async (event) => {
 });
 
 nodes.resetFormButton.addEventListener('click', resetForm);
-nodes.probeAllButton.addEventListener('click', async () => {
-  try {
-    await api('/admin/api/probe-all', { method: 'POST', body: '{}' });
-    await loadDomains();
-    showToast('全量探测完成');
-  } catch (error) {
-    showToast(error.message);
-  }
-});
 
 boot();

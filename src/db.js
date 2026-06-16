@@ -42,14 +42,7 @@ function domainFromRow(row) {
     healthPath: row.health_path,
     notes: row.notes || '',
     createdAt: row.created_at,
-    updatedAt: row.updated_at,
-    serverHealth: {
-      ok: row.health_ok === null || row.health_ok === undefined ? null : row.health_ok === 1,
-      latencyMs: row.health_latency_ms,
-      statusCode: row.health_status_code,
-      error: row.health_error || '',
-      checkedAt: row.health_checked_at
-    }
+    updatedAt: row.updated_at
   };
 }
 
@@ -109,16 +102,6 @@ export function createDatabase(filePath) {
       updated_at TEXT NOT NULL
     );
 
-    CREATE TABLE IF NOT EXISTS health_checks (
-      id INTEGER PRIMARY KEY AUTOINCREMENT,
-      domain_id INTEGER NOT NULL REFERENCES domains(id) ON DELETE CASCADE,
-      ok INTEGER NOT NULL,
-      latency_ms INTEGER,
-      status_code INTEGER,
-      error TEXT NOT NULL DEFAULT '',
-      checked_at TEXT NOT NULL
-    );
-
     CREATE TABLE IF NOT EXISTS probe_results (
       id INTEGER PRIMARY KEY AUTOINCREMENT,
       domain_id INTEGER NOT NULL REFERENCES domains(id) ON DELETE CASCADE,
@@ -152,25 +135,7 @@ export function createDatabase(filePath) {
     VALUES ('siteName', 'Domain Entry', ?)
   `).run(nowIso());
 
-  const domainSelect = `
-    SELECT
-      d.*,
-      h.ok AS health_ok,
-      h.latency_ms AS health_latency_ms,
-      h.status_code AS health_status_code,
-      h.error AS health_error,
-      h.checked_at AS health_checked_at
-    FROM domains d
-    LEFT JOIN (
-      SELECT hc.*
-      FROM health_checks hc
-      INNER JOIN (
-        SELECT domain_id, MAX(id) AS id
-        FROM health_checks
-        GROUP BY domain_id
-      ) latest ON latest.id = hc.id
-    ) h ON h.domain_id = d.id
-  `;
+  const domainSelect = 'SELECT d.* FROM domains d';
 
   function getDomain(id) {
     return domainFromRow(sqlite.prepare(`${domainSelect} WHERE d.id = ?`).get(id));
@@ -303,20 +268,6 @@ export function createDatabase(filePath) {
       sqlite.prepare('DELETE FROM domains WHERE id = ?').run(id);
       insertAudit(actor, 'delete_domain', id, before, null);
       return true;
-    },
-
-    recordHealthCheck(domainId, result) {
-      sqlite.prepare(`
-        INSERT INTO health_checks (domain_id, ok, latency_ms, status_code, error, checked_at)
-        VALUES (?, ?, ?, ?, ?, ?)
-      `).run(
-        domainId,
-        result.ok ? 1 : 0,
-        Number.isFinite(result.latencyMs) ? Math.round(result.latencyMs) : null,
-        Number.isFinite(result.statusCode) ? result.statusCode : null,
-        result.error || '',
-        nowIso()
-      );
     },
 
     recordProbeResult(result) {

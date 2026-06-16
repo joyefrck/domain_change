@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { rankDomains } from '../src/domainSelection.js';
 
 describe('rankDomains', () => {
-  it('prioritizes browser-reachable domains by latency, weight, and server health', () => {
+  it('prioritizes browser-reachable domains by latency and weight only', () => {
     const domains = [
       {
         id: 1,
@@ -16,7 +16,7 @@ describe('rankDomains', () => {
         url: 'https://fast.example.com',
         weight: 50,
         enabled: true,
-        serverHealth: { ok: true, latencyMs: 300 }
+        serverHealth: { ok: false, latencyMs: null }
       },
       {
         id: 3,
@@ -39,7 +39,8 @@ describe('rankDomains', () => {
     expect(ranked[0]).toMatchObject({
       id: 2,
       recommended: true,
-      browserReachable: true
+      browserReachable: true,
+      available: true
     });
     expect(ranked[2].available).toBe(false);
   });

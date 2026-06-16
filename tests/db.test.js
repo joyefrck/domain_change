@@ -15,7 +15,7 @@ describe('database', () => {
     await rm(dir, { recursive: true, force: true });
   });
 
-  it('persists domains, audit logs, health checks, and probe results', () => {
+  it('persists domains, audit logs, and browser probe results', () => {
     const db = createDatabase(path.join(dir, 'app.sqlite'));
     const domain = db.createDomain({
       url: 'https://login.example.com',
@@ -27,12 +27,6 @@ describe('database', () => {
       notes: 'first line'
     }, 'admin');
 
-    db.recordHealthCheck(domain.id, {
-      ok: true,
-      latencyMs: 128,
-      statusCode: 200,
-      error: ''
-    });
     db.recordProbeResult({
       domainId: domain.id,
       ok: true,
@@ -46,9 +40,9 @@ describe('database', () => {
     expect(domains[0]).toMatchObject({
       id: domain.id,
       url: 'https://login.example.com',
-      tags: ['domestic', 'primary'],
-      serverHealth: { ok: true, latencyMs: 128, statusCode: 200 }
+      tags: ['domestic', 'primary']
     });
+    expect(domains[0]).not.toHaveProperty('serverHealth');
 
     expect(db.listAuditLogs()).toHaveLength(1);
     expect(db.listProbeResults()).toHaveLength(1);

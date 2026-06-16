@@ -166,15 +166,22 @@ textarea {
 
 .domain-url {
   overflow-wrap: anywhere;
-  font-size: 21px;
-  font-weight: 760;
+  color: var(--muted);
+  font-size: 14px;
+  line-height: 1.45;
+  font-weight: 650;
+}
+
+.domain-url.compact {
+  margin-top: 3px;
 }
 
 .domain-name {
-  margin-bottom: 8px;
-  color: var(--muted);
-  font-size: 13px;
-  font-weight: 700;
+  overflow-wrap: anywhere;
+  color: var(--text);
+  font-size: 20px;
+  line-height: 1.25;
+  font-weight: 800;
 }
 
 .actions {
@@ -239,10 +246,8 @@ textarea {
   background: #fff;
 }
 
-.domain-row strong {
-  display: block;
-  overflow-wrap: anywhere;
-  font-size: 15px;
+.domain-row .domain-name {
+  font-size: 16px;
 }
 
 .domain-meta {

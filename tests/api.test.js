@@ -42,7 +42,7 @@ describe('Fastify API', () => {
     const admin = await app.inject({ method: 'GET', url: '/admin/' });
 
     expect(entry.statusCode).toBe(200);
-    expect(entry.body).toContain('路线检测');
+    expect(entry.body).toContain('<h1 data-site-title>Domain Entry</h1>');
     expect(admin.statusCode).toBe(200);
     expect(admin.body).toContain('维护登录域名池');
   });
@@ -114,6 +114,7 @@ describe('Fastify API', () => {
     const domains = await app.inject({ method: 'GET', url: '/api/domains' });
     expect(domains.statusCode).toBe(200);
     expect(domains.json().domains).toHaveLength(1);
+    expect(domains.json().domains[0]).not.toHaveProperty('serverHealth');
 
     const probe = await app.inject({
       method: 'POST',
@@ -123,6 +124,38 @@ describe('Fastify API', () => {
     });
     expect(probe.statusCode).toBe(204);
     expect(db.listProbeResults()).toHaveLength(1);
+  });
+
+  it('does not expose server-side domain probe APIs', async () => {
+    const login = await app.inject({
+      method: 'POST',
+      url: '/admin/api/login',
+      payload: { password: 'secret' }
+    });
+    const cookie = login.cookies[0].value;
+    const domain = db.createDomain({
+      url: 'https://login.example.com',
+      name: 'Login A',
+      tags: [],
+      weight: 70,
+      enabled: true,
+      healthPath: '/healthz',
+      notes: ''
+    }, 'seed');
+
+    const singleProbe = await app.inject({
+      method: 'POST',
+      url: `/admin/api/domains/${domain.id}/probe`,
+      cookies: { admin_session: cookie }
+    });
+    const allProbe = await app.inject({
+      method: 'POST',
+      url: '/admin/api/probe-all',
+      cookies: { admin_session: cookie }
+    });
+
+    expect(singleProbe.statusCode).toBe(404);
+    expect(allProbe.statusCode).toBe(404);
   });
 
   it('returns public settings and lets an authenticated admin update the site name', async () => {

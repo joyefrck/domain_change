@@ -16,6 +16,7 @@ const nodes = {
   summaryChecked: document.querySelector('#summaryChecked'),
   summaryAvailable: document.querySelector('#summaryAvailable'),
   siteName: document.querySelector('[data-site-name]'),
+  siteTitle: document.querySelector('[data-site-title]'),
   brandMark: document.querySelector('.brand-mark'),
   toast: document.querySelector('#toast')
 };
@@ -94,7 +95,7 @@ function statusChip(domain) {
     return `<span class="chip ok">浏览器可达 ${domain.browserLatencyMs}ms</span>`;
   }
   if (domain.browserReachable) {
-    return `<span class="chip bad">服务端降权</span>`;
+    return `<span class="chip ok">浏览器可达 ${domain.browserLatencyMs}ms</span>`;
   }
   return `<span class="chip bad">当前网络不可达</span>`;
 }
@@ -107,6 +108,7 @@ function render() {
 
   document.title = `路线检测 - ${state.settings.siteName}`;
   nodes.siteName.textContent = state.settings.siteName;
+  nodes.siteTitle.textContent = state.settings.siteName;
   nodes.brandMark.textContent = state.settings.siteName.trim().charAt(0).toUpperCase() || 'D';
   nodes.summaryTotal.textContent = `候选域名 ${state.domains.length}`;
   nodes.summaryChecked.textContent = `已检测 ${checkedCount}`;
@@ -121,7 +123,6 @@ function render() {
       <div class="domain-meta">
         <span class="chip ok">推荐</span>
         <span class="chip">浏览器 ${recommended.browserLatencyMs}ms</span>
-        <span class="chip">权重 ${recommended.weight}</span>
         ${tags(recommended)}
       </div>
       <div class="actions">
@@ -140,11 +141,10 @@ function render() {
   nodes.domainList.innerHTML = ranked.length ? ranked.map((domain) => `
     <article class="domain-row">
       <div>
-        <strong>${escapeHtml(domain.url)}</strong>
+        <div class="domain-name">${escapeHtml(domain.name)}</div>
+        <div class="domain-url compact">${escapeHtml(domain.url)}</div>
         <div class="domain-meta">
           ${statusChip(domain)}
-          <span class="chip">权重 ${domain.weight}</span>
-          ${domain.serverHealth?.checkedAt ? `<span class="chip">服务端 ${domain.serverHealth.ok ? '正常' : '异常'}</span>` : '<span class="chip">服务端未检测</span>'}
           ${tags(domain)}
         </div>
       </div>
