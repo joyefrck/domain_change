@@ -60,7 +60,12 @@ export async function buildApp({
   await app.register(fastifyStatic, {
     root: publicDir,
     prefix: '/',
-    index: ['index.html']
+    index: ['index.html'],
+    cacheControl: false,
+    etag: false,
+    setHeaders(response) {
+      response.setHeader('Cache-Control', 'no-store');
+    }
   });
 
   app.get('/healthz', async () => ({ ok: true }));

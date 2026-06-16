@@ -65,7 +65,7 @@ function resetForm() {
   nodes.formTitle.textContent = '新增域名';
   nodes.domainForm.reset();
   nodes.domainForm.elements.id.value = '';
-  nodes.domainForm.elements.healthPath.value = '/healthz';
+  nodes.domainForm.elements.healthPath.value = '';
   nodes.domainForm.elements.weight.value = '50';
   nodes.domainForm.elements.enabled.checked = true;
 }
@@ -77,7 +77,7 @@ function editDomain(domain) {
   nodes.domainForm.elements.name.value = domain.name;
   nodes.domainForm.elements.tags.value = (domain.tags || []).join(',');
   nodes.domainForm.elements.weight.value = domain.weight;
-  nodes.domainForm.elements.healthPath.value = domain.healthPath;
+  nodes.domainForm.elements.healthPath.value = domain.healthPath || '';
   nodes.domainForm.elements.notes.value = domain.notes || '';
   nodes.domainForm.elements.enabled.checked = domain.enabled;
   window.scrollTo({ top: 0, behavior: 'smooth' });

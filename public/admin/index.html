@@ -22,7 +22,7 @@
       <section class="hero">
         <div class="hero-copy">
           <h1>维护登录域名池</h1>
-          <p>管理候选登录地址、权重、标签和健康端点。这里不接入主站账号，只控制入口站自己的域名清单。</p>
+          <p>管理候选登录地址、权重、标签和可选探测路径。这里不接入主站账号，只控制入口站自己的域名清单。</p>
         </div>
         <section class="panel" id="loginPanel">
           <h2 class="panel-title">管理员登录</h2>
@@ -109,7 +109,7 @@
             </label>
             <label>
               健康端点
-              <input name="healthPath" value="/healthz">
+              <input name="healthPath" placeholder="留空则检测网站根路径 /">
             </label>
             <label>
               备注

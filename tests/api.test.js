@@ -47,6 +47,14 @@ describe('Fastify API', () => {
     expect(admin.body).toContain('维护登录域名池');
   });
 
+  it('serves static assets without browser caching', async () => {
+    const response = await app.inject({ method: 'GET', url: '/assets/main.js' });
+
+    expect(response.statusCode).toBe(200);
+    expect(response.headers['cache-control']).toBe('no-store');
+    expect(response.headers.etag).toBeUndefined();
+  });
+
   it('renders visibility toggles for every password field in the admin page', async () => {
     const admin = await app.inject({ method: 'GET', url: '/admin/' });
     const passwordFields = admin.body.match(/type="password"/g) || [];
@@ -81,12 +89,13 @@ describe('Fastify API', () => {
         tags: ['domestic'],
         weight: 70,
         enabled: true,
-        healthPath: '/healthz',
+        healthPath: '',
         notes: ''
       }
     });
 
     expect(create.statusCode).toBe(201);
+    expect(create.json().domain.healthPath).toBe('');
     const id = create.json().domain.id;
 
     const update = await app.inject({
@@ -98,6 +107,51 @@ describe('Fastify API', () => {
 
     expect(update.statusCode).toBe(200);
     expect(update.json().domain).toMatchObject({ id, enabled: false, weight: 10 });
+  });
+
+  it('lets an authenticated admin clear an existing health path', async () => {
+    const login = await app.inject({
+      method: 'POST',
+      url: '/admin/api/login',
+      payload: { password: 'secret' }
+    });
+    const cookie = login.cookies[0].value;
+    const domain = db.createDomain({
+      url: 'https://login.example.com',
+      name: 'Login A',
+      tags: [],
+      weight: 70,
+      enabled: true,
+      healthPath: '/healthz',
+      notes: ''
+    }, 'seed');
+
+    const update = await app.inject({
+      method: 'PUT',
+      url: `/admin/api/domains/${domain.id}`,
+      cookies: { admin_session: cookie },
+      payload: { healthPath: '' }
+    });
+
+    expect(update.statusCode).toBe(200);
+    expect(update.json().domain.healthPath).toBe('');
+  });
+
+  it('returns blank health paths in the public domain list', async () => {
+    db.createDomain({
+      url: 'https://login.example.com',
+      name: 'Login A',
+      tags: [],
+      weight: 70,
+      enabled: true,
+      healthPath: '',
+      notes: ''
+    }, 'seed');
+
+    const domains = await app.inject({ method: 'GET', url: '/api/domains' });
+
+    expect(domains.statusCode).toBe(200);
+    expect(domains.json().domains[0].healthPath).toBe('');
   });
 
   it('returns enabled domains and accepts anonymous probe results', async () => {

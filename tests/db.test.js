@@ -49,6 +49,30 @@ describe('database', () => {
     db.close();
   });
 
+  it('allows blank health paths and normalizes non-empty paths', () => {
+    const db = createDatabase(path.join(dir, 'health-paths.sqlite'));
+
+    const defaultPath = db.createDomain({
+      url: 'https://default.example.com',
+      name: 'Default Path'
+    }, 'admin');
+    const blankPath = db.createDomain({
+      url: 'https://blank.example.com',
+      name: 'Blank Path',
+      healthPath: ''
+    }, 'admin');
+    const normalizedPath = db.createDomain({
+      url: 'https://health.example.com',
+      name: 'Health Path',
+      healthPath: 'healthz'
+    }, 'admin');
+
+    expect(defaultPath.healthPath).toBe('');
+    expect(blankPath.healthPath).toBe('');
+    expect(normalizedPath.healthPath).toBe('/healthz');
+    db.close();
+  });
+
   it('persists global site settings', () => {
     const db = createDatabase(path.join(dir, 'settings.sqlite'));
 

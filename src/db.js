@@ -39,7 +39,7 @@ function domainFromRow(row) {
     tags: parseTags(row.tags),
     weight: row.weight,
     enabled: row.enabled === 1,
-    healthPath: row.health_path,
+    healthPath: row.health_path ?? '',
     notes: row.notes || '',
     createdAt: row.created_at,
     updatedAt: row.updated_at
@@ -54,7 +54,10 @@ function normalizeUrl(rawUrl) {
 }
 
 function normalizeHealthPath(value) {
-  const pathValue = value || '/healthz';
+  const pathValue = String(value ?? '').trim();
+  if (!pathValue) {
+    return '';
+  }
   return pathValue.startsWith('/') ? pathValue : `/${pathValue}`;
 }
 
@@ -96,7 +99,7 @@ export function createDatabase(filePath) {
       tags TEXT NOT NULL DEFAULT '[]',
       weight INTEGER NOT NULL DEFAULT 50,
       enabled INTEGER NOT NULL DEFAULT 1,
-      health_path TEXT NOT NULL DEFAULT '/healthz',
+      health_path TEXT NOT NULL DEFAULT '',
       notes TEXT NOT NULL DEFAULT '',
       created_at TEXT NOT NULL,
       updated_at TEXT NOT NULL

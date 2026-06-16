@@ -1,4 +1,5 @@
 import { rankDomains } from './domainSelection.js';
+import { probeStatus, probeUrl } from './probe.js';
 
 const state = {
   domains: [],
@@ -27,17 +28,13 @@ function showToast(message) {
   setTimeout(() => nodes.toast.classList.add('hidden'), 2800);
 }
 
-function healthUrl(domain) {
-  return new URL(domain.healthPath || '/healthz', domain.url).toString();
-}
-
 async function probeDomain(domain) {
   const startedAt = performance.now();
   const controller = new AbortController();
   const timeout = setTimeout(() => controller.abort(), 5000);
 
   try {
-    const response = await fetch(healthUrl(domain), {
+    const response = await fetch(probeUrl(domain), {
       method: 'GET',
       mode: 'cors',
       cache: 'no-store',
@@ -91,13 +88,8 @@ function escapeHtml(value) {
 }
 
 function statusChip(domain) {
-  if (domain.available) {
-    return `<span class="chip ok">浏览器可达 ${domain.browserLatencyMs}ms</span>`;
-  }
-  if (domain.browserReachable) {
-    return `<span class="chip ok">浏览器可达 ${domain.browserLatencyMs}ms</span>`;
-  }
-  return `<span class="chip bad">当前网络不可达</span>`;
+  const status = probeStatus(domain);
+  return `<span class="${status.className}">${escapeHtml(status.text)}</span>`;
 }
 
 function render() {
@@ -135,7 +127,7 @@ function render() {
     nodes.recommendation.textContent = '暂无候选域名，请先进入管理后台添加登录入口。';
   } else {
     nodes.recommendation.className = 'empty';
-    nodes.recommendation.textContent = '没有检测到可用入口，请手动尝试备用地址或稍后重新检测。';
+    nodes.recommendation.textContent = '未能自动确认可用入口，请手动打开下方地址尝试。';
   }
 
   nodes.domainList.innerHTML = ranked.length ? ranked.map((domain) => `
