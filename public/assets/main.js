@@ -116,7 +116,7 @@ function render() {
       <div class="domain-url">${escapeHtml(recommended.url)}</div>
       <div class="domain-meta">
         <span class="chip ok">推荐</span>
-        <span class="chip">浏览器 ${recommended.browserLatencyMs}ms</span>
+        ${statusChip(recommended)}
         ${tags(recommended)}
       </div>
       <div class="actions">
